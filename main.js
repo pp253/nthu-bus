@@ -1,7 +1,3 @@
-import path from 'path'
-import https from 'https'
-import http from 'http'
-import fs from 'fs'
 import express from 'express'
 import helmet from 'helmet'
 import bodyParser from 'body-parser'
@@ -9,6 +5,7 @@ import compression from 'compression'
 import cors from 'cors'
 import io from './src/lib/io'
 import * as spider from './src/spider'
+import * as track from './src/track'
 
 const app = express()
 
@@ -62,6 +59,16 @@ app.get('/api/getAllBusInfo', function (req, res) {
                 err: err
             })
         })
+})
+
+app.get('/api/startTracking', function(req, res) {
+    track.startTracking()
+    res.send('success')
+})
+
+app.get('/api/stopTracking', function(req, res) {
+    track.stopTracking()
+    res.send('success')
 })
 
 app.get('/echo', function(req, res) {
