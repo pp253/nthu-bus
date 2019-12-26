@@ -26,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 // Setting
-app.set('port', 3000 || process.env.PORT)
+app.set('port', 80 || process.env.PORT)
 app.set('title', 'NTHU BUS')
 
 // Static
