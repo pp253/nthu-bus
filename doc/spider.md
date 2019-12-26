@@ -2,7 +2,94 @@
 
 All functions are using method POST.
 
-## `getData`
+
+## `getSchedule`
+
+### Parameters
+None
+
+### Return
+
+From Monday(0) to Sunday(6)
+
+```json
+{
+    "lines": [
+        {
+            "nthu-red": {
+                "organization": "nthu",
+                "organizationName": "清大",
+                "name": "紅線",
+                "forward": {
+                    "from": "北校門口",
+                    "to": "台積館",
+                    "routes": [
+                        "北校門口",
+                        "綜二館",
+                        "楓林小徑",
+                        "人社院",
+                        "台積館"
+                    ],
+                    "schedule": [
+                        [
+                            { "time": "07:20", "type": "small", "from": "北校門口" },
+                            { "time": "07:45", "type": "small", "from": "北校門口" },
+                            { "time": "07:50", "type": "small", "from": "北校門口" },
+                            { "time": "08:05", "type": "small", "from": "北校門口" },
+                            { "time": "08:15", "type": "small", "from": "北校門口" },
+                            ...
+                        ],
+                        ...
+                    ]
+                },
+                "backward": {
+                    "from": "台積館",
+                    "to": "北校門口",
+                    "routes": [
+                        "台積館",
+                        "南門停車場",
+                        "奕園停車場",
+                        "楓林小徑",
+                        "綜二館",
+                        "北校門口"
+                    ],
+                    "schedule": [
+                        [
+                            { "time": "07:27", "type": "small", "from": "台積館" },
+                            { "time": "07:52", "type": "small", "from": "台積館" },
+                            { "time": "07:57", "type": "small", "from": "台積館" },
+                            { "time": "08:12", "type": "small", "from": "台積館" },
+                            { "time": "08:22", "type": "small", "from": "台積館" },
+                            ...
+                        ],
+                        ...
+                    ]
+                }
+            },
+            "nthu-green": {...},
+        }
+    ]
+}
+```
+
+
+## `getHistoryData`
+
+### Parameters
+
+```json
+{
+    "buses": ["038-GG"]
+}
+```
+
+### Example
+
+### Return
+
+
+
+## `getRealtimeData`
 
 ### Parameters
 `lines: Array` 
@@ -81,7 +168,7 @@ None
 }
 ```
 
-## `getAllBusInfo` (WIP)
+## `getAllBusInfo`
 ### Parameters
 None
 ### Return
@@ -90,32 +177,19 @@ None
     {
         "Addr": "新竹縣竹北市十興里縣政九路199號",
         "Angle": 14,
-        "CTypeCode": 1,
         "CarMemo": "19 km!h #向北",
         "CarNo": "038-GG",
         "Cartype": "遊覽車",
-        "Cid": null,
-        "CompNo": "flt260",
         "Cur_GPSTime": "2019-12-23 15:41:30",
         "Cur_PX": 121.01182565574267,
         "Cur_PY": 24.831268738265042,
         "DeviceNo": "",
         "DriverNo": "蔡孟翰",
         "Driver_Phone": "0955-573-082",
-        "Fuel": null,
-        "IPNO": "886916127796",
-        "IS_DVR_On": "0",
-        "IS_IMG_On": "0",
-        "IconType": "1",
-        "Now_Temperature": null,
         "Pre_GPSTime": "2019-12-23 15:41:30",
         "Pre_PX": 121.01182565574267,
         "Pre_PY": 24.831268738265042,
-        "RoadTrackName": " ",
-        "Scy_On": false,
-        "Speed": 19,
-        "SubCompNo": "flt260_1",
-        "volt": null
+        "Speed": 19
     },
     ...
 ]

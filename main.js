@@ -8,8 +8,7 @@ import bodyParser from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'
 import io from './src/lib/io'
-
-import { getData } from './src/spider'
+import * as spider from './src/spider'
 
 const app = express()
 
@@ -34,8 +33,35 @@ app.set('title', 'NTHU BUS')
 app.use('/', express.static('public'))
 
 // Routes
-app.get('/api/get_data', function (req, res) {
-    res.json(getData())
+app.all('*', function (req, res, next) {
+    console.log(req.ip, req.originalUrl)
+    next()
+})
+
+app.get('/api/getRealtimeData', function (req, res) {
+    res.json({})
+})
+
+app.get('/api/getSchedule', function (req, res) {
+    res.json({})
+})
+
+app.get('/api/getHistoryData', function (req, res) {
+    res.json({})
+})
+
+app.get('/api/getAllBusInfo', function (req, res) {
+    spider.getAllBusInfo()
+        .then(data => {
+            res.json(data)
+        })
+        .catch(err => {
+            console.error(err)
+            res.json({
+                error: 1,
+                err: err
+            })
+        })
 })
 
 app.get('/echo', function(req, res) {
@@ -46,9 +72,9 @@ app.get('*', function(req, res) {
     res.status(404).send('404 NOT FOUND')
 })
 
-
+// Listening
 const server = app.listen(app.get('port'), () => {
-    console.log(`Start to listen on PORT ${app.get('port')} ...`)
+    console.log(`Start listening on PORT ${app.get('port')} ...`)
 })
 
 io.attach(server, {
