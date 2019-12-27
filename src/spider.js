@@ -88,40 +88,40 @@ export function getAllBusInfo(forceRefresh = false) {
                             'content-length': body.length
                         }
                     })
+                        .then(body => {
+                            const rep = getJson(body)
+                            if (rep === 'TimeOut') {
+                                console.error('Timeout, try to login again.')
+                                // resolve(getData(true))
+                                reject('TimeOut')
+                                return
+                            }
+                            console.log(rep)
+                            // delete all irrelevant column
+                            for (let item of rep) {
+                                delete item['CTypeCode']
+                                delete item['Cid']
+                                delete item['CompNo']
+                                delete item['Fuel']
+                                delete item['IPNO']
+                                delete item['IS_DVR_On']
+                                delete item['IS_IMG_On']
+                                delete item['IconType']
+                                delete item['Now_Temperature']
+                                delete item['RoadTrackName']
+                                delete item['Scy_On']
+                                delete item['SubCompNo']
+                                delete item['volt']
+                            }
+                            data = rep
+                            resolve(data)
+                        })
+                        .catch(err => {
+                            console.error(err)
+                        })
                 } else {
                     resolve(data)
                 }
-            })
-            .then(body => {
-                const rep = getJson(body)
-                if (rep === 'TimeOut') {
-                    console.error('Timeout, try to login again.')
-                    // resolve(getData(true))
-                    reject('TimeOut')
-                    return
-                }
-                console.log(rep)
-                // delete all irrelevant column
-                for (let item of rep) {
-                    delete item['CTypeCode']
-                    delete item['Cid']
-                    delete item['CompNo']
-                    delete item['Fuel']
-                    delete item['IPNO']
-                    delete item['IS_DVR_On']
-                    delete item['IS_IMG_On']
-                    delete item['IconType']
-                    delete item['Now_Temperature']
-                    delete item['RoadTrackName']
-                    delete item['Scy_On']
-                    delete item['SubCompNo']
-                    delete item['volt']
-                }
-                data = rep
-                resolve(data)
-            })
-            .catch(err => {
-                console.error(err)
             })
     })
 }
