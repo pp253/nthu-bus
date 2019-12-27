@@ -25,7 +25,13 @@ const db = new sqlite3.Database(FILENAME, function(err){
 })
 
 export function getHistory(filter) {
-    throw new Error('Not implemented.')
+    return new Promise((resolve, reject) => {
+        let sql = `SELECT * FROM bushistory;`
+        db.all(sql, [], function (err, rows) {
+            if (err) throw err
+            resolve(rows)
+        })
+    })
 }
 
 export function log(carInfo) {
