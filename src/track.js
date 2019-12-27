@@ -9,13 +9,14 @@ const db = new sqlite3.Database(FILENAME, function(err){
     let sql = `
     CREATE TABLE IF NOT EXISTS "bushistory" (
         "id"	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-        "CarNo"	INTEGER,
+        "CarNo"	TEXT,
         "GPSTime"	TEXT,
         "PX"	REAL,
         "PY"	REAL,
         "Speed"	INTEGER,
         "Angle"	INTEGER,
-        "Driver"	TEXT
+        "Driver"	TEXT,
+        CONSTRAINT unq UNIQUE (CarNo, GPSTime)
     )
     `
     db.exec(sql, function (err) {
@@ -42,11 +43,10 @@ export function log(carInfo) {
         VALUES ("${carInfo.CarNo}", "${carInfo.Cur_GPSTime}", "${carInfo.Cur_PX}", "${carInfo.Cur_PY}", "${carInfo.Speed}", "${carInfo.Angle}", "${carInfo.DriverNo}");`
         db.run(sql, function (err) {
             if (err) {
-                console.error(err)
-                reject(err)
-                return
+                // silent error
+            } else {
+                resolve(true)
             }
-            resolve(true)
         })
     })
 }
