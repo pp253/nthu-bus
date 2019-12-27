@@ -62,6 +62,7 @@ export function track() {
             for (let carInfo of data) {
                 log(carInfo)
             }
+            resolve(data)
         })
     })
 }
