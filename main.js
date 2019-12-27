@@ -44,7 +44,13 @@ app.get('/api/getSchedule', function (req, res) {
 })
 
 app.get('/api/getHistoryData', function (req, res) {
-    res.json({})
+    track.getHistory().then(data => {
+            res.json(data)
+        })
+        .catch(err => {
+            console.error(err)
+            res.json({ error: 1, err: err })
+        })
 })
 
 app.get('/api/getAllBusInfo', function (req, res) {
@@ -54,10 +60,7 @@ app.get('/api/getAllBusInfo', function (req, res) {
         })
         .catch(err => {
             console.error(err)
-            res.json({
-                error: 1,
-                err: err
-            })
+            res.json({ error: 1, err: err })
         })
 })
 
