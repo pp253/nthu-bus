@@ -30,67 +30,70 @@ app.set('title', 'NTHU BUS')
 app.use('/', express.static('public'))
 
 // Routes
-app.all('*', function (req, res, next) {
-    console.log(req.ip, req.originalUrl)
-    next()
+app.all('*', function(req, res, next) {
+  console.log(req.ip, req.originalUrl)
+  next()
 })
 
-app.get('/api/getRealtimeData', function (req, res) {
-    res.json({})
+app.get('/api/getRealtimeData', function(req, res) {
+  res.json({})
 })
 
-app.get('/api/getSchedule', function (req, res) {
-    res.json({})
+app.get('/api/getSchedule', function(req, res) {
+  res.json({})
 })
 
-app.get('/api/getHistoryData', function (req, res) {
-    let filter = req.query
-    track.getHistoryData(filter).then(data => {
-            res.json(data)
-        })
-        .catch(err => {
-            console.error(err)
-            res.json({ error: 1, err: err })
-        })
+app.get('/api/getHistoryData', function(req, res) {
+  let filter = req.query
+  track
+    .getHistoryData(filter)
+    .then(data => {
+      res.json(data)
+    })
+    .catch(err => {
+      console.error(err)
+      res.json({ error: 1, err: err })
+    })
 })
 
-app.get('/api/getAllBusInfo', function (req, res) {
-    spider.getAllBusInfo()
-        .then(data => {
-            res.json(data)
-        })
-        .catch(err => {
-            console.error(err)
-            res.json({ error: 1, err: err })
-        })
+app.get('/api/getAllBusInfo', function(req, res) {
+  spider
+    .getAllBusInfo()
+    .then(data => {
+      res.json(data)
+    })
+    .catch(err => {
+      console.error(err)
+      res.json({ error: 1, err: err })
+    })
 })
 
 app.get('/api/startTracking', function(req, res) {
-    track.startTracking()
-    res.send('success')
+  track.startTracking()
+  res.send('success')
 })
 
 app.get('/api/stopTracking', function(req, res) {
-    track.stopTracking()
-    res.send('success')
+  track.stopTracking()
+  res.send('success')
 })
 
 app.get('/echo', function(req, res) {
-    res.send('echo')
+  res.send('echo')
 })
 
 app.get('*', function(req, res) {
-    res.status(404).send('404 NOT FOUND')
+  res.status(404).send('404 NOT FOUND')
 })
 
 // Listening
 const server = app.listen(app.get('port'), () => {
-    console.log(`Start listening on PORT ${app.get('port')} ...`)
+  console.log(`Start listening on PORT ${app.get('port')} ...`)
 
-    track.startTracking()
+  track.startTracking()
 })
 
 io.attach(server, {
-    pingInterval: 10 * 1000,
-    pingTimeout: 5 * 1000
+  pingInterval: 10 * 1000,
+  pingTimeout: 5 * 1000
 })
