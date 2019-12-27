@@ -44,7 +44,8 @@ app.get('/api/getSchedule', function (req, res) {
 })
 
 app.get('/api/getHistoryData', function (req, res) {
-    track.getHistory().then(data => {
+    let filter = req.query
+    track.getHistoryData(filter).then(data => {
             res.json(data)
         })
         .catch(err => {
@@ -85,6 +86,8 @@ app.get('*', function(req, res) {
 // Listening
 const server = app.listen(app.get('port'), () => {
     console.log(`Start listening on PORT ${app.get('port')} ...`)
+
+    track.startTracking()
 })
 
 io.attach(server, {

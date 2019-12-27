@@ -25,9 +25,45 @@ const db = new sqlite3.Database(FILENAME, function(err){
     })
 })
 
-export function getHistory(filter) {
+export function getHistoryData(filter) {
     return new Promise((resolve, reject) => {
-        let sql = `SELECT * FROM bushistory;`
+        let whereclause = ''
+        let conditions = []
+        if (filter) {
+            for (let key in filter) {
+                switch (key) {
+                    case 'CarNo':
+                        conditions.push(`CarNo = '${filter[key]}'`)
+                        break
+                    case 'Driver':
+                        conditions.push(`Driver = '${filter[key]}'`)
+                        break
+                    default: break
+                }
+            }
+            if (filter['GPSTimeFrom'] && filter['GPSTimeTo']) {
+                conditions.push(`GPSTime BETWEEN '${filter['GPSTimeFrom']}' AND '${filter['GPSTimeTo']}'`)
+            }
+            if (filter['PXFrom'] && filter['PXTo']) {
+                if (filter['PXFrom'] > filter['PXTo']) {
+                    reject('PXFrom should be less than PXTo.')
+                    return
+                }
+                conditions.push(`PX BETWEEN ${filter['PXFrom']} AND ${filter['PXTo']}`)
+            }
+            if (filter['PYFrom'] && filter['PYTo']) {
+                if (filter['PYFrom'] > filter['PYTo']) {
+                    reject('PYFrom should be less than PYTo.')
+                    return
+                }
+                conditions.push(`PY BETWEEN ${filter['PYFrom']} AND ${filter['PYTo']}`)
+            }
+            if (conditions.length > 0) {
+                whereclause = ` WHERE ((${conditions.join(') AND (')}))`
+            }
+        }
+        let sql = `SELECT * FROM bushistory${whereclause};`
+        
         db.all(sql, [], function (err, rows) {
             if (err) throw err
             resolve(rows)
