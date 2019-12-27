@@ -2,10 +2,10 @@
 
 All functions are using method POST.
 
-
 ## `getSchedule`
 
 ### Parameters
+
 None
 
 ### Return
@@ -70,15 +70,14 @@ From Monday(0) to Sunday(6)
 }
 ```
 
-
 ## `getHistoryData`
 
 ### Parameters
 
 method: GET
 
-`CarNo` 車牌
-`Driver` 駕駛名
+`CarNo` 車牌，可以使用 `%25` 作為萬用字元，如 `038%25`。
+`Driver` 駕駛名，可以使用 `%25` 作為萬用字元，如 `蔡%25`。
 `GPSTimeFrom` 紀錄搜尋開始日期，格式為 `YYYY-MM-DD`。
 `GPSTimeTo` 紀錄搜尋結束日期。注意，`GPSTimeTo` 應該比 `GPSTimeFrom` 來的晚。
 `PXFrom` 經線搜尋開始，格式為任意小數。
@@ -122,21 +121,22 @@ method: GET
 ]
 ```
 
-
 ## `getRealtimeData`
 
 ### Parameters
-`lines: Array` 
+
+`lines: Array`
 
 ### Example
 
 ```json
 {
-    "lines": ["nthu-red", "nthu-green"]
+  "lines": ["nthu-red", "nthu-green"]
 }
 ```
 
 ### Return
+
 ```json
 {
     "lines": {
@@ -179,32 +179,37 @@ method: GET
 In general, you should not call this function.
 
 ### Parameters
+
 None
 
 ### Return
 
 ```json
 {
-    "APPRefreshTime": "60",
-    "AppFunKey": "1,2,3,5,9,6,7,8",
-    "CarNo": null,
-    "CheckKey": "07e304c706030ccb",
-    "CompNo": "flt260",
-    "LCnt": 1,
-    "LoginID": "16343089",
-    "ServiceNameSpace": null,
-    "ServiceURL": "app1.elocation.com.tw",
-    "SubCompNo": "flt260_1",
-    "UserID": "nthu101",
-    "UserLevel": 31,
-    "UserPwd": "nthu101"
+  "APPRefreshTime": "60",
+  "AppFunKey": "1,2,3,5,9,6,7,8",
+  "CarNo": null,
+  "CheckKey": "07e304c706030ccb",
+  "CompNo": "flt260",
+  "LCnt": 1,
+  "LoginID": "16343089",
+  "ServiceNameSpace": null,
+  "ServiceURL": "app1.elocation.com.tw",
+  "SubCompNo": "flt260_1",
+  "UserID": "nthu101",
+  "UserLevel": 31,
+  "UserPwd": "nthu101"
 }
 ```
 
 ## `getAllBusInfo`
+
 ### Parameters
+
 None
+
 ### Return
+
 ```json
 [
     {
@@ -227,7 +232,5 @@ None
     ...
 ]
 ```
-
-
 
 ## `get`
