@@ -80,9 +80,9 @@ export function startTracking() {
         let nextInterval = NOT_PEEK_TRACK_INTERVAL
         let currentHour = (new Date()).getHours()
         if (PEEK.includes(currentHour)) {
-            nextInterval = NOT_PEEK_TRACK_INTERVAL
-        } else {
             nextInterval = PEEK_TRACK_INTERVAL
+        } else {
+            nextInterval = NOT_PEEK_TRACK_INTERVAL
         }
 
         track()
