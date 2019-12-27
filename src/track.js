@@ -73,6 +73,9 @@ const PEEK = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
 let trackingTimerId
 
 export function startTracking() {
+    if (trackingTimerId) {
+        return false
+    }
     setTimeout(function _startTracking() {
         let nextInterval = NOT_PEEK_TRACK_INTERVAL
         let currentHour = (new Date()).getHours()
@@ -90,11 +93,12 @@ export function startTracking() {
                 console.error(err)
             })
     }, 0)
+    return true
 }
 
 export function stopTracking() {
     if (!trackingTimerId) {
-        return
+        return false
     }
     clearTimeout(trackingTimerId)
 }

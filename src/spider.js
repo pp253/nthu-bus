@@ -96,7 +96,6 @@ export function getAllBusInfo(forceRefresh = false) {
                                 reject('TimeOut')
                                 return
                             }
-                            console.log(rep)
                             // delete all irrelevant column
                             for (let item of rep) {
                                 delete item['CTypeCode']
