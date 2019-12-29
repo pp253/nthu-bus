@@ -42,11 +42,10 @@ export function getHistoryData(filter) {
         conditions.push(`PY BETWEEN ${filter['PYFrom']} AND ${filter['PYTo']}`)
       }
       if (conditions.length > 0) {
-        whereclause = ` WHERE ((${conditions.join(') AND (')}))`
+        whereclause = `WHERE ((${conditions.join(') AND (')}))`
       }
     }
-    let sql = `SELECT * FROM bushistory${whereclause};`
-    console.log(sql)
+    let sql = `SELECT * FROM bushistory ${whereclause};`
 
     db.all(sql, [], function(err, rows) {
       if (err) throw err

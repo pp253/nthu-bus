@@ -18,7 +18,8 @@ From Monday(0) to Sunday(6)
         "nthu-red": {
             "organization": "nthu",
             "organizationName": "清大",
-            "name": "紅線",
+            "line": "red",
+            "lineName": "紅線",
             "forward": {
                 "from": "北校門口",
                 "to": "台積館",
@@ -76,14 +77,14 @@ From Monday(0) to Sunday(6)
 
 method: GET
 
-`CarNo` 車牌，可以使用 `%25` 作為萬用字元，如 `038%25`。
-`Driver` 駕駛名，可以使用 `%25` 作為萬用字元，如 `蔡%25`。
-`GPSTimeFrom` 紀錄搜尋開始日期，格式為 `YYYY-MM-DD`。
-`GPSTimeTo` 紀錄搜尋結束日期。注意，`GPSTimeTo` 應該比 `GPSTimeFrom` 來的晚。
-`PXFrom` 經線搜尋開始，格式為任意小數。
-`PXTo` 經線搜尋結束。注意，`PXFrom` 應該比 `PXTo` 來的小。
-`PYFrom` 緯線搜尋開始，格式為任意小數。
-`PYTo` 緯線搜尋結束。注意，`PYFrom` 應該比 `PYTo` 來的小。
+- `CarNo` 車牌，可以使用 `%25` 作為萬用字元，如 `038%25`。
+- `Driver` 駕駛名，可以使用 `%25` 作為萬用字元，如 `蔡%25`。
+- `GPSTimeFrom` 紀錄搜尋開始日期，格式為 `YYYY-MM-DD`。
+- `GPSTimeTo` 紀錄搜尋結束日期。注意，`GPSTimeTo` 應該比 `GPSTimeFrom` 來的晚。
+- `PXFrom` 經線搜尋開始，格式為任意小數。
+- `PXTo` 經線搜尋結束。注意，`PXFrom` 應該比 `PXTo` 來的小。
+- `PYFrom` 緯線搜尋開始，格式為任意小數。
+- `PYTo` 緯線搜尋結束。注意，`PYFrom` 應該比 `PYTo` 來的小。
 
 上述各參數可以任意搭配，若不使用視為不進行篩選。
 
@@ -125,7 +126,7 @@ method: GET
 
 ### Parameters
 
-`lines: Array`
+- `lines: Array`
 
 ### Example
 
@@ -174,7 +175,7 @@ method: GET
 }
 ```
 
-## `login`
+## `login` _NotImplemented_
 
 In general, you should not call this function.
 
