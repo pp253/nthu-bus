@@ -56,6 +56,32 @@ app.get('/api/getHistoryData', function(req, res) {
     })
 })
 
+app.get('/api/getHistoryDataCSV', function(req, res) {
+  let filter = req.query
+  track
+    .getHistoryData(filter)
+    .then(data => {
+      res.send('標籤, 車牌, 時間, 緯度, 經度\n')
+
+      for (let row of data) {
+        res.send(
+          [
+            row['CarNo'] + ':' + row['GPSTime'],
+            row['CarNo'],
+            row['GPSTime'],
+            row['PY'],
+            row['PX']
+          ].join(', ') + '\n'
+        )
+      }
+      res.end()
+    })
+    .catch(err => {
+      console.error(err)
+      res.json({ error: 1, err: err })
+    })
+})
+
 app.get('/api/getAllBusInfo', function(req, res) {
   spider
     .getAllBusInfo()
