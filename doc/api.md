@@ -2,7 +2,7 @@
 
 All functions are using method POST.
 
-## `getSchedule`
+## `getSchedule` _NotImplemented_
 
 ### Parameters
 
@@ -90,8 +90,8 @@ method: GET
 
 ### Example
 
-```json
-?CarNo=038-GG&Driver=蔡孟翰&GPSTimeFrom=2019-12-25&GPSTimeTo=2019-12-29&PXFrom=120&PXTo=121.5&PYFrom=22&PYTo=25
+```
+/api/getHistoryData?CarNo=038-GG&Driver=蔡孟翰&GPSTimeFrom=2019-12-25&GPSTimeTo=2019-12-29&PXFrom=120&PXTo=121.5&PYFrom=22&PYTo=25
 ```
 
 ### Return
@@ -122,7 +122,32 @@ method: GET
 ]
 ```
 
-## `getRealtimeData`
+## `getHistoryDataCSV`
+### Parameters
+
+method: GET
+
+The same as `getHistoryData`.
+
+### Example
+
+```
+/api/getHistoryData?CarNo=076%&PXFrom=120.984308&PXTo=121.000161&PYFrom=24.784877&PYTo=24.799851
+```
+
+### Return
+
+```
+標籤, 車牌, 時間, 緯度, 經度, 車速, 角度, 司機
+076-NN:2019-12-27 13:14:15, 076-NN, 2019-12-27 13:14:15, 24.78492699944481, 120.99239235575254, 0, 280, 李金龍1
+076-NN:2019-12-27 13:14:45, 076-NN, 2019-12-27 13:14:45, 24.785012000721725, 120.99003237050371, 38, 289, 李金龍1
+076-NN:2019-12-27 13:15:15, 076-NN, 2019-12-27 13:15:15, 24.786297026106993, 120.98853396225553, 11, 36, 李金龍1
+076-NN:2019-12-27 13:15:45, 076-NN, 2019-12-27 13:15:45, 24.787383688254348, 120.9882573410028, 12, 352, 李金龍1
+076-NN:2019-12-27 13:16:15, 076-NN, 2019-12-27 13:16:15, 24.789178656208627, 120.98933231766287, 34, 46, 李金龍1
+076-NN:2019-12-27 13:16:45, 076-NN, 2019-12-27 13:16:45, 24.79030531009165, 120.9902756402023, 14, 359, 李金龍1
+```
+
+## `getRealtimeData` _NotImplemented_
 
 ### Parameters
 
@@ -233,5 +258,3 @@ None
     ...
 ]
 ```
-
-## `get`
