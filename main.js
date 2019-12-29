@@ -61,10 +61,10 @@ app.get('/api/getHistoryDataCSV', function(req, res) {
   track
     .getHistoryData(filter)
     .then(data => {
-      res.send('標籤, 車牌, 時間, 緯度, 經度, 車速, 角度, 司機\n')
+      res.write('標籤, 車牌, 時間, 緯度, 經度, 車速, 角度, 司機\n')
 
       for (let row of data) {
-        res.send(
+        res.write(
           [
             row['CarNo'] + ':' + row['GPSTime'],
             row['CarNo'],
