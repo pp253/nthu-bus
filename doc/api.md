@@ -123,6 +123,7 @@ method: GET
 ```
 
 ## `getHistoryDataCSV`
+
 ### Parameters
 
 method: GET
