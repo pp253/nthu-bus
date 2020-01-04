@@ -90,6 +90,18 @@ export function reset() {
   })
 }
 
+export function getStartingStation(routeId) {
+  return mainRoutes[routeId][0]
+}
+
+export function getTerminalStation(routeId) {
+  return mainRoutes[routeId][mainRoutes[routeId].length - 1]
+}
+
+export function getRoute(routeId) {
+  return mainRouting[routeId]
+}
+
 export function getAllPoints(routeId, fromPointId) {
   let points = []
   let begin = fromPointId ? false : true

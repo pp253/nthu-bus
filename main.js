@@ -6,6 +6,7 @@ import cors from 'cors'
 import io from './src/lib/io'
 import * as spider from './src/spider'
 import * as track from './src/track'
+import logger from './src/lib/logger'
 
 const app = express()
 
@@ -31,7 +32,7 @@ app.use('/', express.static('public'))
 
 // Routes
 app.all('*', function(req, res, next) {
-  console.log(req.ip, req.originalUrl)
+  logger.info(req.ip, req.originalUrl)
   next()
 })
 
@@ -51,7 +52,7 @@ app.get('/api/getHistoryData', function(req, res) {
       res.json(data)
     })
     .catch(err => {
-      console.error(err)
+      logger.error(err)
       res.json({ error: 1, err: err })
     })
 })
@@ -80,7 +81,7 @@ app.get('/api/getHistoryDataCSV', function(req, res) {
       res.end()
     })
     .catch(err => {
-      console.error(err)
+      logger.error(err)
       res.json({ error: 1, err: err })
     })
 })
@@ -92,7 +93,7 @@ app.get('/api/getAllBusInfo', function(req, res) {
       res.json(data)
     })
     .catch(err => {
-      console.error(err)
+      logger.error(err)
       res.json({ error: 1, err: err })
     })
 })
@@ -117,7 +118,7 @@ app.get('*', function(req, res) {
 
 // Listening
 const server = app.listen(app.get('port'), () => {
-  console.log(`Start listening on PORT ${app.get('port')} ...`)
+  logger.info(`Start listening on PORT ${app.get('port')} ...`)
 
   track.startTracking()
 })

@@ -1,5 +1,12 @@
 import db from './db'
 
+export const STATUS = {
+  UNBEGUN: 0,
+  ONGOING: 1,
+  FINISH: 2,
+  MISSING: 3
+}
+
 export function getCarRealtimeInfo(car) {
   return new Promise((resolve, reject) => {
     let carId = car.id

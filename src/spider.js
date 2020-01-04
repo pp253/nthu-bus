@@ -1,4 +1,5 @@
 import request from 'request-promise-native'
+import logger from './lib/logger'
 
 function getJson(body) {
   const parse = /<\?xml version="1\.0" encoding="utf-8"\?>\r\n<string xmlns="([^"]*)">([^<]*)<\/string>/g
@@ -58,11 +59,11 @@ function login(forceRefresh = false) {
           }
           profile = rep
           resolve(profile)
-          console.log('login success')
-          console.log(profile)
+          logger.info('API login success')
+          logger.debug(profile)
         })
         .catch(err => {
-          console.error(err)
+          logger.error(err)
           reject(err)
         })
     } else {
@@ -90,7 +91,6 @@ export function getAllBusInfo(forceRefresh = false) {
           .then(body => {
             const rep = getJson(body)
             if (rep === 'TimeOut') {
-              console.error('Timeout, try to login again.')
               // resolve(getData(true))
               reject('TimeOut')
               return
@@ -115,7 +115,7 @@ export function getAllBusInfo(forceRefresh = false) {
             resolve(data)
           })
           .catch(err => {
-            console.error(err)
+            reject(err)
           })
       } else {
         resolve(data)

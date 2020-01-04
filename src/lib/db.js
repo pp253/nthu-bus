@@ -1,4 +1,5 @@
 import sqlite3 from 'sqlite3'
+import logger from './logger'
 
 const FILENAME = 'db/track.db'
 
@@ -20,7 +21,7 @@ const db = new sqlite3.Database(FILENAME, function(err) {
     `
   db.exec(sql, function(err) {
     if (err) throw err
-    console.log('Successfuly connect to database and create table')
+    logger.info('Successfuly connect to database and create table')
   })
 })
 export default db

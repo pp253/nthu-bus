@@ -1,6 +1,7 @@
 import * as spider from './spider'
 import sqlite3 from 'sqlite3'
 import db from './lib/db'
+import logger from './lib/logger'
 
 export function getHistoryData(filter) {
   return new Promise((resolve, reject) => {
@@ -108,7 +109,7 @@ export function startTracking() {
         trackingTimerId = setTimeout(_startTracking, nextInterval)
       })
       .catch(err => {
-        console.error(err)
+        logger.error(err)
       })
   }, 0)
   return true
