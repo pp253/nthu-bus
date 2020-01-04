@@ -6,7 +6,8 @@ log4js.configure({
     'email': {
       type: '@log4js-node/smtp',
       recipients: 'pp.pp253@gmail.com',
-      transport: 'SMTP'
+      transport: 'SMTP',
+      smtp: { host: 'localhost', port: 25 }
     },
   },
   categories: { default: { appenders: [ 'email' ], level: 'error' } },
