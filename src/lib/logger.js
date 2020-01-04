@@ -3,19 +3,33 @@ import log4js from 'log4js'
 
 log4js.configure({
   appenders: {
+    'console': { type: 'console' },
     'email': {
       type: '@log4js-node/smtp',
       recipients: 'pp.pp253@gmail.com',
       transport: 'SMTP',
-      smtp: { host: 'localhost', port: 25 }
+      SMTP: {
+        host: 'localhost',
+        port: 25,
+        tls: { rejectUnauthorized: false }
+      }
+    },
+    'sendcriticalerror': {
+      type: 'logLevelFilter', 
+      level: 'error', 
+      appender:  'email'
     },
   },
-  categories: { default: { appenders: [ 'email' ], level: 'error' } },
+  categories: {
+    default: {
+      appenders: [ 'sendcriticalerror', 'console' ],
+      level: 'trace'
+    }
+  },
   pm2: true
 })
 
 
 const logger = log4js.getLogger()
-logger.level = 'debug'
 
 export default logger
