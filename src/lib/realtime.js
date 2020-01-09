@@ -86,7 +86,18 @@ export function setRealtimeStatus(scheduleId, status) {
   return item
 }
 
-export function setRealtimePoint
+export function setRealtimePoint(scheduleId, pointId, gpsTime) {
+  let item = getRealtimeBySchedule(scheduleId)
+  item.LastPointId = item.PointId
+  item.PointId = pointId
+  item.GPSTime = gpsTime
+  return item
+}
+
+export function setRealtime(scheduleId, payload) {
+  setRealtimeStatus(scheduleId, payload.Status)
+  setRealtimePoint(scheduleId, payload.PointId, payload.GPSTime)
+}
 
 /**
  * @returns {ScheduleId[]} missingSchedule
