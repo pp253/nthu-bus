@@ -1,6 +1,13 @@
 import db from './db'
-import {updateCarStatus, STATUS} from './realtime_schedule'
-import { fitToPoint, getStartingStation, getTerminalStation, getRoute } from './point'
+import { updateCarStatus, STATUS } from './realtime_schedule'
+import {
+  fitToPoint,
+  getStartingStation,
+  getTerminalStation,
+  getRoute
+} from './point'
+import { getResponsibleSchedule } from './schedule'
+import { setAllMissingSchedule, getPreparedSchedule } from './realtime'
 
 class Car {
   constructor(carNo) {
@@ -25,7 +32,7 @@ class Car {
 
   loadByCarNo(carNo) {
     new Promise((resolve, reject) => {
-      let sql = `SELECT * from "cars" WHERE "CarNo" = ?;`
+      let sql = 'SELECT * from "cars" WHERE "CarNo" = ?;'
       let params = [carNo]
       db.get(sql, ...params, (err, row) => {
         if (err) throw err
@@ -64,9 +71,10 @@ class Car {
       let route = getRoute(this.routeId)
       if (
         this.position === getTerminalStation(this.routeId) ||
-        Date.now() - (route.DepartureTime + route.ExpectedRunningLength) > EXCEED_WIDTH ||
+        Date.now() - (route.DepartureTime + route.ExpectedRunningLength) >
+          EXCEED_WIDTH ||
         !inExpectedPoints(this)
-        ) {
+      ) {
         updateCarStatus(this, STATUS.FINISH)
         this.reset()
       } else {
@@ -74,12 +82,12 @@ class Car {
       }
     }
 
-    
     // if the car should be registered to a new schedule
     // first of all, the car can't be assigned to a route right now
     // 1) in the relax_width, the bus has already on the route
-    let responsibleSchedule = 
+    let preparedSchedule = getPreparedSchedule(this.id)
 
-
+    // set all missing schedule
+    setAllMissingSchedule()
   }
 }
