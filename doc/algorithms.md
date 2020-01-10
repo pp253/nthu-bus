@@ -119,14 +119,16 @@ for idx in main_routing[id == routeId].Routes
   sub_routes = sub_routing[FromPointId == stn and ToPointId == next_stn].Routes
 
   // if car is in the middle of stops
+  // FIXME: wrong
   for sub_idx in sub_routes.reverse()
-    if next_sub_stn == next_stn
-      continue
     sub_stn = sub_routes[sub_idx]
     next_sub_stn = sub_routes[sub_idx + 1]
+    if next_sub_stn == next_stn
+      continue
 
     predicted[next_stn] = predicted[next_stn] +
         prediction[RouteId == routeId and FromPointId == sub_stn and ToPointId == next_sub_stn].TimeMean
+      
     if active[sub_stn.FromPointId -> sub_stn.ToPointId].CarId > 0
       adjust_time = -(Date.now() - active[sub_stn.FromPointId -> sub_stn.ToPointId].MinGPSTime)
       predicted[next_stn] = predicted[next_stn] + adjust_time
