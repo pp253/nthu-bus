@@ -9,8 +9,8 @@ class Point {
   }
 
   loadByPointId(pointId) {
-    new Promise((resolve, reject) => {
-      let sql = `SELECT * FROM "points" WHERE "id" = ?;`
+    new Promise((resolve) => {
+      let sql = 'SELECT * FROM "points" WHERE "id" = ?;'
       let params = [pointId]
       db.get(sql, ...params, (err, row) => {
         if (err) throw err
@@ -24,21 +24,25 @@ class Point {
 }
 
 let points = {}
-let mainRouting = {}
-let mainRoutes = {}
+let mainRouting = {} // id => row
+let mainRoutes = {}  // id => row.Routes in list
 let subRouting = {}
 let subRoutes = {}
 
-function getSubRouteKey(subRoute) {
+/**
+ * 
+ * @param {SubRoute} subRoute 
+ */
+export function getSubRouteKey(subRoute) {
   return `${subRoute.FromPointId},${subRoute.ToPointId}`
 }
 
 export function reset() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     Promise.resolve()
       .then(() => {
-        return new Promise((resolve, reject) => {
-          let sql = `SELECT * FROM "main_routing";`
+        return new Promise((resolve) => {
+          let sql = 'SELECT * FROM "main_routing";'
           db.all(sql, (err, rows) => {
             if (err) throw err
 
@@ -55,8 +59,8 @@ export function reset() {
         })
       })
       .then(() => {
-        return new Promise((resolve, reject) => {
-          let sql = `SELECT * FROM "sub_routing";`
+        return new Promise((resolve) => {
+          let sql = 'SELECT * FROM "sub_routing";'
           db.all(sql, (err, rows) => {
             if (err) throw err
 
@@ -74,8 +78,8 @@ export function reset() {
         })
       })
       .then(() => {
-        return new Promise((resolve, reject) => {
-          let sql = `SELECT * FROM "points";`
+        return new Promise((resolve) => {
+          let sql = 'SELECT * FROM "points";'
           db.all(sql, (err, rows) => {
             if (err) throw err
             points = {}
@@ -98,11 +102,15 @@ export function getTerminalStation(routeId) {
   return mainRoutes[routeId][mainRoutes[routeId].length - 1]
 }
 
-export function getRoute(routeId) {
+export function getRouting() {
+  return mainRouting
+}
+
+export function getRoutingOf(routeId) {
   return mainRouting[routeId]
 }
 
-export function getAllPoints(routeId, fromPointId) {
+export function getAllPointsOf(routeId, fromPointId) {
   let points = []
   let begin = fromPointId ? false : true
   let routes = mainRoutes[routeId]
@@ -125,8 +133,60 @@ export function getAllPoints(routeId, fromPointId) {
   return points
 }
 
-export function fitToPoint(px, py) {
-  return new Point()
+/**
+ * 
+ * @param {Car} car 
+ */
+export function inExpectedPointsOf(car) {
+  if (!car.routeId) {
+    return true
+  } else if (getAllPointsOf(car.routeId, car.lastPointId).includes(car.pointId)) {
+    return true 
+  } else {
+    return false
+  }
 }
 
-reset()
+export function getMainRoutesOf(routeId) {
+  return mainRoutes[routeId]
+}
+
+export function getSubRoutesOf(fromPointId, toPointId) {
+  return subRoutes[getSubRouteKey(fromPointId, toPointId)]
+}
+
+function argmin(input_list) {
+  let c = 0
+  let min = 0
+  for (let i of input_list){
+    if (i < input_list[min]){
+      min = c
+    }
+    c = c + 1
+  }
+  return min
+}
+
+function calLossIndex(px, py, PX, PY) {
+  const MUL_FACTOR = 10000
+  return (((px - PX)*MUL_FACTOR) ** 2 + ((py - PY)*MUL_FACTOR) ** 2)
+}
+
+/**
+ * 
+ * @param {*} px 
+ * @param {*} py 
+ * @returns {Point} point
+ */
+export function fitToPoint(px, py){
+  let buff = []
+  for (let s in points){
+    buff.push(calLossIndex(px,py,points[s]['PX'],points[s]['PY']))
+  }
+  if (Math.max(...buff) > 20000){
+    return 0
+  }
+    
+  let keep = argmin(buff)
+  return Object.keys(points)[keep]
+}

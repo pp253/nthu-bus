@@ -60,7 +60,6 @@ function login(forceRefresh = false) {
           profile = rep
           resolve(profile)
           logger.info('API login success')
-          logger.debug(profile)
         })
         .catch(err => {
           logger.error(err)

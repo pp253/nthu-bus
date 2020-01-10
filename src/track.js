@@ -1,5 +1,4 @@
 import * as spider from './spider'
-import sqlite3 from 'sqlite3'
 import db from './lib/db'
 import logger from './lib/logger'
 
@@ -56,7 +55,7 @@ export function getHistoryData(filter) {
 }
 
 export function log(carInfo) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let sql = `
         INSERT INTO "bushistory"
         ("CarNo", "GPSTime", "PX", "PY", "Speed", "Angle", "Driver")
@@ -64,6 +63,7 @@ export function log(carInfo) {
     db.run(sql, function(err) {
       if (err) {
         // silent error
+        // because same GPSTime may cause SQLITE_CONSTRAINT error
       } else {
         resolve(true)
       }
@@ -71,19 +71,29 @@ export function log(carInfo) {
   })
 }
 
-export function track() {
-  return new Promise((resolve, reject) => {
-    spider.getAllBusInfo().then(data => {
-      if (!data || data.length === 0) {
-        reject(false)
-        return
-      }
-      for (let carInfo of data) {
-        log(carInfo)
-      }
-      resolve(data)
-    })
-  })
+export function formatToCarInfo(carInfo) {
+  let info = {
+    CarNo: carInfo.CarNo,
+    GPSTime: carInfo.Cur_GPSTime,
+    PX: carInfo.Cur_PX,
+    PY: carInfo.Cur_PY,
+    Speed: carInfo.Speed,
+    Angle: carInfo.Angle,
+    Driver: carInfo.DriverNo,
+  }
+  return info
+}
+
+export async function track() {
+  let data = await spider.getAllBusInfo()
+  if (!data || data.length === 0) {
+    throw new Error('No tracking data.')
+  }
+  data = data.filter(v => v.CarNo)
+  for (let carInfo of data) {
+    log(carInfo)
+  }
+  return data.map(v => formatToCarInfo(v))
 }
 
 const PEEK_TRACK_INTERVAL = 30 * 1000

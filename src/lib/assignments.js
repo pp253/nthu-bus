@@ -3,7 +3,7 @@ import db from './db'
 let assignments = {}
 
 export function reset() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let sql = 'SELECT * FROM "assignments";'
     db.all(sql, (err, rows) => {
       if (err) throw err
@@ -31,5 +31,3 @@ export function getResponsibleSchedule(carId) {
   }
   return responsibleSchedule
 }
-
-reset()

@@ -1,6 +1,6 @@
 import db from './db'
 import { getResponsibleSchedule } from './assignments'
-import { getDay } from './time'
+import { getDay, parseTimeString, getTimeOfNow } from './time'
 
 let schedule = {}
 const WEEKDAY = {
@@ -14,7 +14,7 @@ const WEEKDAY = {
 }
 
 export function reset() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let sql = 'SELECT * FROM "schedule";'
     db.all(sql, (err, rows) => {
       if (err) throw err
@@ -51,4 +51,43 @@ export function getPossibleSchedule(carId) {
   return possibleSchedule
 }
 
-reset()
+export function getSchedulesByRoute(routeId) {
+  let list = []
+  for (let id in schedule) {
+    let item = schedule[id]
+    if (item.RouteId !== routeId) {
+      continue
+    }
+    list.push(item.id)
+  }
+  return list
+}
+
+export function getRouteIdByScheduleId(scheduleId) {
+  return schedule[scheduleId].RouteId
+}
+
+export function getNextDepartureTime(routeId) {
+  let nowTime = getTimeOfNow()
+  let schedules  = getSchedulesByRoute(routeId)
+  for (let id of schedules) {
+    let row = schedule[id]
+    let departureTime = parseTimeString(row.DepartureTime)
+    // in the future
+    if (nowTime < departureTime) {
+      return departureTime
+    }
+  }
+  return null
+}
+
+export function getSchedulesByDay(day) {
+  let schedules = []
+  for (let id in schedule) {
+    let row = schedule[id]
+    if (row[WEEKDAY[day]] === 1){
+      schedules.push(row)
+    }
+  }
+  return schedules
+}

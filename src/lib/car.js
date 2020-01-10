@@ -1,15 +1,40 @@
 import db from './db'
-import { updateCarStatus, STATUS } from './realtime_schedule'
+import { updateCarStatus, STATUS } from './realtime'
 import {
   fitToPoint,
-  getStartingStation,
   getTerminalStation,
-  getRoute
+  getRoutingOf,
+  inExpectedPointsOf
 } from './point'
-import { getResponsibleSchedule } from './schedule'
-import { setAllMissingSchedule, getPreparedSchedule } from './realtime'
+import { getPreparedSchedule, setRealtimePoint, setCarToRealtime, setRealtimeStatus } from './realtime'
+import { getRouteIdByScheduleId } from './schedule'
 
-class Car {
+let cars = {}
+
+export function reset() {
+  new Promise((resolve) => {
+    let sql = 'SELECT * from "cars";'
+    db.all(sql, (err, rows) => {
+      if (err) throw err
+      if (!rows) throw new Error('No cars found.')
+      for (let row of rows) {
+        cars[row.id] = row
+      }
+      resolve(cars)
+    })
+  })
+}
+
+export function getCarIdByNo(carNo) {
+  for (let id in cars) {
+    if (cars[id].CarNo === carNo) {
+      return id
+    }
+  }
+  throw new Error('Cannot find the car.')
+}
+
+export class Car {
   constructor(carNo) {
     this.carNo = carNo
 
@@ -21,8 +46,9 @@ class Car {
     // set by user
     this.px = null
     this.py = null
-    this.position = null
-    this.gpstime = null
+    this.pointId = null
+    this.lastPointId = null
+    this.gpsTime = null
 
     this.routeId = null
     this.scheduleId = null
@@ -31,18 +57,10 @@ class Car {
   }
 
   loadByCarNo(carNo) {
-    new Promise((resolve, reject) => {
-      let sql = 'SELECT * from "cars" WHERE "CarNo" = ?;'
-      let params = [carNo]
-      db.get(sql, ...params, (err, row) => {
-        if (err) throw err
-        if (!row) throw Error('Missing Car.')
-        this.id = row.id
-        this.type = row.CarType
-        this.driver = row.Driver
-        resolve(this)
-      })
-    })
+    this.carNo = carNo
+    this.id = getCarIdByNo(carNo)
+    this.type = cars[this.id].CarType
+    this.driver = cars[this.id].Driver
   }
 
   reset() {
@@ -50,13 +68,20 @@ class Car {
     this.scheduleId = null
   }
 
-  fitToPoint() {
+  updateGPSPosition(px, py, gpsTime) {
+    this.px = px
+    this.py = py
+    let pointId = fitToPoint(px, py)
+    this.updatePoint(pointId, gpsTime)
+  }
+
+  updatePoint(pointId, gpsTime) {
+    this.lastPointId = this.pointId
+    this.pointId = pointId
+    this.gpsTime = gpsTime
     if (this.routeId) {
-      this.position = fitToPoint(this.px, this.py)
-    } else {
-      this.position = fitToPoint(this.px, this.py)
+      setRealtimePoint(this.scheduleId, this.pointId, this.gpsTime)
     }
-    return this.position
   }
 
   fitToSchedule() {
@@ -68,12 +93,12 @@ class Car {
     // 2) Is not in the expected range of road
     // 3) Time exceed too much
     if (this.routeId) {
-      let route = getRoute(this.routeId)
+      let route = getRoutingOf(this.routeId)
       if (
-        this.position === getTerminalStation(this.routeId) ||
+        this.pointId === getTerminalStation(this.routeId) ||
         Date.now() - (route.DepartureTime + route.ExpectedRunningLength) >
           EXCEED_WIDTH ||
-        !inExpectedPoints(this)
+        !inExpectedPointsOf(this)
       ) {
         updateCarStatus(this, STATUS.FINISH)
         this.reset()
@@ -86,8 +111,12 @@ class Car {
     // first of all, the car can't be assigned to a route right now
     // 1) in the relax_width, the bus has already on the route
     let preparedSchedule = getPreparedSchedule(this.id)
-
-    // set all missing schedule
-    setAllMissingSchedule()
+    if (preparedSchedule && preparedSchedule.length > 0) {
+      this.scheduleId = preparedSchedule[0]
+      this.routeId = getRouteIdByScheduleId(this.scheduleId)
+      setCarToRealtime(this.scheduleId, this.id)
+      setRealtimeStatus(this.scheduleId, STATUS.ONGOING)
+      setRealtimePoint(this.scheduleId, this.pointId, this.gpsTime)
+    }
   }
 }

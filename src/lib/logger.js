@@ -1,7 +1,7 @@
 import log4js from 'log4js'
 import process from 'process'
 const ENV_PRODUCTION =
-  'NODE_ENV' in process.env ? process.env.NODE_ENV === 'development' : true
+  'NODE_ENV' in process.env ? process.env.NODE_ENV === 'development' : false
 
 log4js.configure({
   appenders: {
