@@ -3,10 +3,12 @@ import helmet from 'helmet'
 import bodyParser from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'
+import log4js from 'log4js'
 import io from './src/lib/io'
 import * as spider from './src/spider'
 import * as track from './src/track'
 import logger from './src/lib/logger'
+import {startCycle} from './src/engine'
 
 const app = express()
 
@@ -27,15 +29,13 @@ app.use(bodyParser.json())
 app.set('port', 80 || process.env.PORT)
 app.set('title', 'NTHU BUS')
 
+// Logger
+app.use(log4js.connectLogger(logger, { level: 'auto' }))
+
 // Static
 app.use('/', express.static('public'))
 
 // Routes
-app.all('*', function(req, res, next) {
-  logger.info(req.ip, req.originalUrl)
-  next()
-})
-
 app.get('/api/getRealtimeData', function(req, res) {
   res.json({})
 })
@@ -120,7 +120,9 @@ app.get('*', function(req, res) {
 const server = app.listen(app.get('port'), () => {
   logger.info(`Start listening on PORT ${app.get('port')} ...`)
 
-  track.startTracking()
+  // track.startTracking()
+
+  startCycle()
 })
 
 io.attach(server, {
