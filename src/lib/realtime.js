@@ -1,6 +1,7 @@
 import db from './db'
-import { getPossibleSchedule, getSchedulesByRoute, getSchedulesByDay } from './schedule'
-import { getNow, getDay } from './time'
+import { getPossibleSchedule, getSchedulesByRoute, getSchedulesByDay, getScheduleById } from './schedule'
+import { getDay, parseTimeString, getTimeOfNow } from './time'
+import logger from './logger'
 
 export const STATUS = {
   UNBEGUN: 0,
@@ -17,33 +18,38 @@ let realtime = {}
  */
 export async function reset() {
   await importFromSchedule()
-  return new Promise((resolve) => {
-    let sql = 'SELECT * FROM "realtime_schedule";'
-    db.all(sql, (err, rows) => {
-      if (err) throw err
-      realtime = {}
-      for (let row of rows) {
-        realtime[row.id] = row
-      }
-      resolve(realtime)
-    })
-  })
 }
 
 export function importFromSchedule() {
   new Promise((resolve) => {
     let day = getDay()
     let schedules = getSchedulesByDay(day)
-    
-    db.serialize(function () {
-      db.run('DELETE FROM "realtime_schedule";')
+    logger.info(`Realtime: Import from schedule day ${day}, loaded schedules: ${schedules.map(v => v.id)}.`)
 
+    db.run('DELETE FROM "realtime_schedule";', function (err) {
+      if (err) throw err
+
+      let valuesClause = []
       for (let row of schedules) {
-        let sql = 'INSERT INTO "realtime_schedule" (ScheduleId, Status) VALUES (?, ?);'
         let params = [row.id, STATUS.UNBEGUN]
-        db.run(sql, ...params)
+        valuesClause.push(params.join(', '))
       }
-      resolve()
+      let sql = `INSERT INTO "realtime_schedule" (ScheduleId, Status) VALUES (${valuesClause.join('), (')});`
+        
+      db.run(sql, function(err) {
+        if (err) throw err
+        
+        let sql = 'SELECT * FROM "realtime_schedule";'
+        db.all(sql, (err, rows) => {
+          if (err) throw err
+          realtime = {}
+          for (let row of rows) {
+            realtime[row.id] = row
+          }
+          logger.info('Successfully load realtime.')
+          resolve(realtime)
+        })
+      })
     })
   })
 }
@@ -57,13 +63,16 @@ export function save() {
         let setClause = []
         let params = []
         for (let key of keys) {
-          setClause.push(`"${key}" = ?`)
+          if (key === 'id') {
+            continue
+          }
+          if (row[key] === null) {
+            continue
+          }
+          setClause.push(`"${key}"=?`)
           params.push(row[key])
         }
-
-        params.push(id)
-
-        let sql = `UPDATE "realtime_schedule" SET ${setClause.join(', ')} WHERE "id" = ?;`
+        let sql = `UPDATE "realtime_schedule" SET ${setClause.join(', ')} WHERE "id"='${id}';`
         db.run(sql, ...params)
       }
       resolve()
@@ -105,10 +114,11 @@ export function getPreparedSchedule(carId) {
     }
 
     // 4) DepartureTime BETWEEN now() - relax_width AND now() + relax_width
-    let departureTime = new Date(item.DepartureTime)
+    let schedule = getScheduleById(scheduleId)
+    let departureTime = parseTimeString(schedule.DepartureTime)
     if (
-      departureTime < getNow() - RELAX_WIDTH ||
-      departureTime > getNow() + RELAX_WIDTH
+      departureTime < getTimeOfNow() - RELAX_WIDTH ||
+      departureTime > getTimeOfNow() + RELAX_WIDTH
     ) {
       continue
     }
@@ -151,73 +161,36 @@ export function setRealtime(scheduleId, payload) {
 export function setAllMissingSchedule() {
   let missingSchedule = []
   for (let id in realtime) {
-    let item = realtime[id]
-    if (item.Status !== STATUS.UNBEGUN) {
+    let row = realtime[id]
+    if (row.Status !== STATUS.UNBEGUN) {
       continue
     }
-    let departureTime = new Date(item.DepartureTime)
-    if (departureTime < getNow() - RELAX_WIDTH) {
+    let schedule = getScheduleById(row.ScheduleId)
+    let departureTime = parseTimeString(schedule.DepartureTime)
+    if (departureTime > getTimeOfNow() - RELAX_WIDTH) {
       continue
     }
-    setRealtimeStatus(item.ScheduleId, STATUS.MISSING)
-    missingSchedule.push(item.ScheduleId)
+    setRealtimeStatus(row.ScheduleId, STATUS.MISSING)
+    missingSchedule.push(row.ScheduleId)
   }
   return missingSchedule
 }
 
-export function getCarRealtimeInfo(car) {
-  return new Promise((resolve,) => {
-    let carId = car.id
-    let sql = 'SELECT * FROM "realtime_schedule" WHERE "CarId" = ?;'
-    let params = [carId]
-    db.get(sql, ...params, (err, row) => {
-      if (err) throw err
-      resolve(row)
-    })
-  })
-}
-
-export function updateCarStatus(car, status) {
-  return new Promise((resolve,) => {
-    let carId = car.id
-    let sql = 'UPDATE "realtime_schedule" SET "Status" = ? WHERE "CarId" = ?;'
-    let params = [status, carId]
-    db.run(sql, ...params, err => {
-      if (err) throw err
-      resolve(true)
-    })
-  })
-}
-
-export function updateCarPosition(car, status) {
-  return new Promise((resolve) => {
-    let carId = car.id
-    getCarRealtimeInfo(carId).then(row => {
-      let sql =
-        'UPDATE "realtime_schedule" SET "PointId" = ?, "LastPointId" = ? WHERE "CarId" = ?;'
-      let params = [status, carId]
-      db.run(sql, ...params, (err, row) => {
-        if (err) throw err
-        if (!row) return null
-        resolve(row)
-      })
-    })
-  })
-}
-
 export function getRealtimeByRoute(routeId) {
   let rows = []
-  let routes = getSchedulesByRoute(routeId)
+  let schedules = getSchedulesByRoute(parseInt(routeId))
   for (let id in realtime) {
     let item = realtime[id]
-    if (routes.includes(item.RouteId)) {
+    if (schedules.includes(parseInt(item.ScheduleId))) {
       rows.push(item)
     }
+    // console.log(schedules, parseInt(item.RouteId), item.ScheduleId)
   }
+  // console.log(rows)
   return rows
 }
 
 export function getRealtimeByRouteAndPoint(routeId, pointId) {
   let rows = getRealtimeByRoute(routeId)
-  return rows.filter(v => v.PointId === pointId)
+  return rows.filter(v => parseInt(v.PointId) === parseInt(pointId) && v.Status === STATUS.ONGOING)
 }

@@ -1,5 +1,5 @@
 import db from './db'
-import { updateCarStatus, STATUS } from './realtime'
+import { STATUS } from './realtime'
 import {
   fitToPoint,
   getTerminalStation,
@@ -7,7 +7,8 @@ import {
   inExpectedPointsOf
 } from './point'
 import { getPreparedSchedule, setRealtimePoint, setCarToRealtime, setRealtimeStatus } from './realtime'
-import { getRouteIdByScheduleId } from './schedule'
+import { getRouteIdByScheduleId, getScheduleById } from './schedule'
+import { getTimeOfNow, parseTimeString, getNow } from './time'
 
 let cars = {}
 
@@ -23,6 +24,10 @@ export function reset() {
       resolve(cars)
     })
   })
+}
+
+export function getCars(){
+  return cars
 }
 
 export function getCarIdByNo(carNo) {
@@ -53,6 +58,8 @@ export class Car {
     this.routeId = null
     this.scheduleId = null
 
+    this.errorCount = 0
+
     this.loadByCarNo(carNo)
   }
 
@@ -72,6 +79,9 @@ export class Car {
     this.px = px
     this.py = py
     let pointId = fitToPoint(px, py)
+    if (getNow() - new Date(gpsTime).getTime() > 2 * 60 * 1000) {
+      pointId = 0
+    }
     this.updatePoint(pointId, gpsTime)
   }
 
@@ -79,7 +89,7 @@ export class Car {
     this.lastPointId = this.pointId
     this.pointId = pointId
     this.gpsTime = gpsTime
-    if (this.routeId) {
+    if (this.routeId && this.pointId !== 0) {
       setRealtimePoint(this.scheduleId, this.pointId, this.gpsTime)
     }
   }
@@ -88,19 +98,36 @@ export class Car {
     const RELAX_WIDTH = 5 * 60 * 1000
     const EXCEED_WIDTH = 5 * 60 * 1000 + RELAX_WIDTH
 
+    if (this.pointId === 0) {
+      // missing tracking
+      this.errorCount += 1
+      if (this.routeId) {
+        console.log('missing tracking')
+        setRealtimeStatus(this.scheduleId, STATUS.FINISH)
+        this.errorCount = 0
+        this.reset()
+      }
+      return this.scheduleId
+    }
+      
     // if the current schedule is no longer available
     // 1) the car has rach the terminal station
     // 2) Is not in the expected range of road
     // 3) Time exceed too much
     if (this.routeId) {
       let route = getRoutingOf(this.routeId)
-      if (
-        this.pointId === getTerminalStation(this.routeId) ||
-        Date.now() - (route.DepartureTime + route.ExpectedRunningLength) >
-          EXCEED_WIDTH ||
-        !inExpectedPointsOf(this)
-      ) {
-        updateCarStatus(this, STATUS.FINISH)
+      let conIsTerminalStation = parseInt(this.pointId) === getTerminalStation(this.routeId)
+      let conISExceedExpectedRunningLength = getTimeOfNow() - (parseTimeString(getScheduleById(this.scheduleId).DepartureTime) + route.ExpectedRunningLength * 60 * 1000) >
+          EXCEED_WIDTH
+      // console.log(getTimeOfNow(), parseTimeString(getScheduleById(this.scheduleId).DepartureTime), route.ExpectedRunningLength * 60 * 1000, EXCEED_WIDTH)
+      let outOfRange = !inExpectedPointsOf(this)
+      if (conIsTerminalStation || conISExceedExpectedRunningLength || outOfRange) {
+        console.log('finish', this.scheduleId, this.id, 
+          conIsTerminalStation,
+          conISExceedExpectedRunningLength,
+          outOfRange
+        )
+        setRealtimeStatus(this.scheduleId, STATUS.FINISH)
         this.reset()
       } else {
         return this.scheduleId
@@ -115,8 +142,10 @@ export class Car {
       this.scheduleId = preparedSchedule[0]
       this.routeId = getRouteIdByScheduleId(this.scheduleId)
       setCarToRealtime(this.scheduleId, this.id)
+      console.log('setCarToRealtime', this.scheduleId, this.id)
       setRealtimeStatus(this.scheduleId, STATUS.ONGOING)
       setRealtimePoint(this.scheduleId, this.pointId, this.gpsTime)
     }
+    return this.scheduleId
   }
 }

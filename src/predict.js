@@ -3,6 +3,7 @@ import { getRealtimeByRouteAndPoint } from './lib/realtime'
 import { transpose } from './utils'
 import { getMainRoutesOf, getSubRoutesOf, getSubRouteKey, getRouting } from './lib/point'
 import { getNextDepartureTime } from './lib/schedule'
+import { getDateOfNow } from './lib/time'
 
 
 let prediction = {}
@@ -49,17 +50,33 @@ export function getPredictionTimeMean(routeId, fromPointId, toPointId) {
   return getPrediction(routeId, fromPointId, toPointId).TimeMean * 1000
 }
 
+function getTimeOf (time) {
+  let date = new Date(time)
+  if (date.getTime() < getDateOfNow()) {
+    return  Infinity
+  }
+  // console.log(time, date.getTime(), getDateOfNow(), new Date().getTimezoneOffset() * 60 * 1000)
+  return date.getTime() - getDateOfNow() // - new Date().getTimezoneOffset() * 60 * 1000
+}
+
 export function predict(routeId) {
   let active = {}
   routeId = parseInt(routeId)
+
+
   for (let pt of getPredictionByRouteId(routeId)) {
     let oriDf = getRealtimeByRouteAndPoint(routeId, pt.FromPointId)
     let df = transpose(oriDf)
-    active[getSubRouteKey(pt.FromPointId, pt.ToPointId)] = {
+
+    active[getSubRouteKey(pt)] = {
       CarId: df.CarId,
-      MinGPSTime: df.GPSTime ? Math.min(...df.GPSTime) : Infinity
+      MinGPSTime: df.GPSTime ? Math.min(...df.GPSTime.map(getTimeOf)) : Infinity
+    }
+    if (df.GPSTime) {
+      // console.log(routeId, df.GPSTime.map(getTimeOf))
     }
   }
+  // console.log(active)
 
   let predicted = {}
   let routes = getMainRoutesOf(routeId)
@@ -70,14 +87,12 @@ export function predict(routeId) {
     if (idx === routes.length - 1) {
       continue
     }
-    console.log('main:', idx, routes[idx])
+    // console.log('main:', idx, routes[idx])
 
     let stn = routes[idx]
     let nextStn = routes[idx + 1]
 
     // FIXME: 要不要排除掉還沒出站的公車? 
-    // FIXME: stn->nextStn 不存在 prediction table
-    // FIXME: 有可能有中途的站點是Departure Station，像是粽二，要多想想
     let subRoutes = getSubRoutesOf({FromPointId: stn, ToPointId: nextStn})
 
     // if subStn is the starting point, skip
@@ -92,7 +107,7 @@ export function predict(routeId) {
         if (!predicted[stn] || predicted[stn] > nextDepartureTime) {
           predicted[stn] = nextDepartureTime
           timebase = nextDepartureTime
-          console.log('         set timebase', timebase, nextDepartureTime)
+          // console.log('         set timebase', timebase, nextDepartureTime)
         }
       }
 
@@ -100,13 +115,14 @@ export function predict(routeId) {
       cumOffset += timeMean
       
       // if there's a car right on the point, change time baseline
-      let tmpActive = active[getSubRouteKey(prevSubStn, subStn)]
+      let tmpActive = active[getSubRouteKey({FromPointId: prevSubStn, ToPointId: subStn})]
+      // console.log(getSubRouteKey({FromPointId: prevSubStn, ToPointId: subStn}), tmpActive)
       if (tmpActive.CarId && tmpActive.CarId.length > 0) {
         timebase = tmpActive.MinGPSTime
         cumOffset = 0
-        console.log('active')
+        // console.log('active')
       }
-      console.log('    sub:', subIdx, subStn, cumOffset, timebase, timeMean)
+      // console.log('    sub:', subIdx, subStn, cumOffset, timebase, timeMean)
     }
 
     predicted[nextStn] = cumOffset + timebase
@@ -120,7 +136,7 @@ export function predictAllRoutes() {
   for (let id in mainRouting) {
     let routing = mainRouting[id]
     let routingLabel = routing.Label
-    console.log(routingLabel)
+    // console.log(routingLabel)
     prediction[routingLabel] = predict(id)
   }
   return prediction

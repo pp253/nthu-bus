@@ -1,7 +1,7 @@
 import { predictAllRoutes } from './predict'
 import { track } from './track'
 import {Car, getCarIdByNo} from './lib/car'
-import { setAllMissingSchedule, save as saveRealtime } from './lib/realtime'
+import { setAllMissingSchedule } from './lib/realtime'
 import * as realtime from './lib/realtime'
 import * as car from './lib/car'
 import * as point from './lib/point'
@@ -37,7 +37,7 @@ export async function reload() {
 }
 
 export async function save() {
-  await saveRealtime()
+  await realtime.save()
   console.log('save realtime')
 }
 
@@ -68,7 +68,8 @@ export async function runCycle() {
   }
 
   // 4) set all missing schedule
-  setAllMissingSchedule()
+  let missing = setAllMissingSchedule()
+  logger.info('Missing schedule', missing)
 
   // 5) predictAllRoutes()
   prediction = predictAllRoutes()
@@ -83,5 +84,5 @@ export async function startCycle() {
     await reload()
     loaded = true
   }
-  runCycle()
+  await runCycle()
 }

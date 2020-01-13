@@ -5,49 +5,55 @@ import logger from './lib/logger'
 export function getHistoryData(filter) {
   return new Promise((resolve, reject) => {
     let whereclause = ''
+    let params = []
     if (filter) {
       let conditions = []
       if (filter['CarNo']) {
         if (filter['CarNo'].includes('%')) {
-          conditions.push(`CarNo LIKE '${filter['CarNo']}'`)
+          conditions.push('"CarNo" LIKE ?')
         } else {
-          conditions.push(`CarNo = '${filter['CarNo']}'`)
+          conditions.push('"CarNo" = ?')
         }
+        params.push(filter['CarNo'])
       }
       if (filter['Driver']) {
-        let driver = filter['Driver']
-        if (driver.includes('%')) {
-          conditions.push(`Driver LIKE '${driver}'`)
+        if (filter['Driver'].includes('%')) {
+          conditions.push('"Driver" LIKE ?')
         } else {
-          conditions.push(`Driver = '${driver}'`)
+          conditions.push('"Driver" = ?')
         }
+        params.push(filter['Driver'])
       }
       if (filter['GPSTimeFrom'] && filter['GPSTimeTo']) {
-        conditions.push(
-          `GPSTime BETWEEN '${filter['GPSTimeFrom']}' AND '${filter['GPSTimeTo']}'`
-        )
+        conditions.push('"GPSTime" BETWEEN ? AND ?')
+        params.push(filter['GPSTimeFrom'])
+        params.push(filter['GPSTimeTo'])
       }
       if (filter['PXFrom'] && filter['PXTo']) {
         if (filter['PXFrom'] > filter['PXTo']) {
           reject('PXFrom should be less than PXTo.')
           return
         }
-        conditions.push(`PX BETWEEN ${filter['PXFrom']} AND ${filter['PXTo']}`)
+        conditions.push('"PX" BETWEEN ? AND ?')
+        params.push(filter['PXFrom'])
+        params.push(filter['PXTo'])
       }
       if (filter['PYFrom'] && filter['PYTo']) {
         if (filter['PYFrom'] > filter['PYTo']) {
           reject('PYFrom should be less than PYTo.')
           return
         }
-        conditions.push(`PY BETWEEN ${filter['PYFrom']} AND ${filter['PYTo']}`)
+        conditions.push('"PY" BETWEEN ? AND ?')
+        params.push(filter['PYFrom'])
+        params.push(filter['PYTo'])
       }
       if (conditions.length > 0) {
         whereclause = `WHERE ((${conditions.join(') AND (')}))`
       }
     }
-    let sql = `SELECT * FROM bushistory ${whereclause};`
+    let sql = `SELECT * FROM "bushistory" ${whereclause};`
 
-    db.all(sql, [], function(err, rows) {
+    db.all(sql, ...params, function(err, rows) {
       if (err) throw err
       resolve(rows)
     })

@@ -29,6 +29,10 @@ let mainRoutes = {}  // id => row.Routes in list
 let subRouting = {}
 let subRoutes = {}
 
+export function getPoints() {
+  return points
+}
+
 /**
  * 
  * @param {SubRoute} subRoute 
@@ -99,7 +103,7 @@ export function getStartingStation(routeId) {
 }
 
 export function getTerminalStation(routeId) {
-  return mainRoutes[routeId][mainRoutes[routeId].length - 1]
+  return parseInt(mainRoutes[routeId][mainRoutes[routeId].length - 1])
 }
 
 export function getRouting() {
@@ -114,19 +118,20 @@ export function getAllPointsOf(routeId, fromPointId) {
   let points = []
   let begin = fromPointId ? false : true
   let routes = mainRoutes[routeId]
-  for (let idx in routes) {
+  for (let idx = 0; idx < routes.length; idx++) {
     if (idx === routes.length - 1) {
-      break
+      continue
     }
     let stn = routes[idx]
     let nextStn = routes[idx + 1]
     let subRouteKey = getSubRouteKey({ FromPointId: stn, ToPointId: nextStn })
     for (let subStn of subRoutes[subRouteKey]) {
-      if (subStn === fromPointId) {
+      if (subStn === parseInt(fromPointId)) {
         begin = true
       }
+      // console.log(routeId, subStn, parseInt(fromPointId), begin)
       if (begin) {
-        points.push(subStn)
+        points.push(parseInt(subStn))
       }
     }
   }
@@ -138,13 +143,22 @@ export function getAllPointsOf(routeId, fromPointId) {
  * @param {Car} car 
  */
 export function inExpectedPointsOf(car) {
+  // console.log(getAllPointsOf(car.routeId, car.lastPointId), car.pointId)
   if (!car.routeId) {
     return true
-  } else if (getAllPointsOf(car.routeId, car.lastPointId).includes(car.pointId)) {
+  } else if (getAllPointsOf(car.routeId, car.lastPointId).includes(parseInt(car.pointId))) {
     return true 
   } else {
     return false
   }
+}
+
+export function getMainRoutes() {
+  return mainRoutes
+}
+
+export function getSubRoutes() {
+  return subRoutes
 }
 
 export function getMainRoutesOf(routeId) {

@@ -24,9 +24,9 @@ export function reset() {
 export function getResponsibleSchedule(carId) {
   let responsibleSchedule = []
   for (let id in assignments) {
-    let assign = assignments[id]
-    if (assign.CarId === carId) {
-      responsibleSchedule.push(assign.ScheduleId)
+    let row = assignments[id]
+    if (parseInt(row.CarId) === parseInt(carId)) {
+      responsibleSchedule.push(parseInt(row.ScheduleId))
     }
   }
   return responsibleSchedule

@@ -1,7 +1,24 @@
+let modifiedDate = null
+
+// simulation may use this
+export function setDate(date) {
+  modifiedDate = date
+}
+
+export function unsetDate() {
+  modifiedDate = null
+}
+
+export function issetDate() {
+  if (modifiedDate) {
+    return true
+  } else {
+    return false
+  }
+}
 
 export function getDate() {
-  // simulation may modify this
-  return new Date()
+  return issetDate()? modifiedDate: new Date()
 }
 
 export function getNow() {

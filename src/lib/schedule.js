@@ -3,7 +3,7 @@ import { getResponsibleSchedule } from './assignments'
 import { getDay, parseTimeString, getTimeOfNow } from './time'
 
 let schedule = {}
-const WEEKDAY = {
+export const WEEKDAY = {
   0: 'U',
   1: 'M',
   2: 'T',
@@ -38,7 +38,7 @@ export function getPossibleSchedule(carId) {
   let possibleSchedule = []
   for (let id in schedule) {
     // 1) id in responsible_schedule
-    if (!responsibleSchedule.includes(id)) {
+    if (!responsibleSchedule.includes(parseInt(id))) {
       continue
     }
     let item = schedule[id]
@@ -46,19 +46,23 @@ export function getPossibleSchedule(carId) {
     if (item[WEEKDAY[weekday]] !== 1) {
       continue
     }
-    possibleSchedule.push(id)
+    possibleSchedule.push(parseInt(id))
   }
   return possibleSchedule
+}
+
+export function getScheduleById(scheduleId) {
+  return schedule[scheduleId]
 }
 
 export function getSchedulesByRoute(routeId) {
   let list = []
   for (let id in schedule) {
     let item = schedule[id]
-    if (item.RouteId !== routeId) {
+    if (parseInt(item.RouteId) !== parseInt(routeId)) {
       continue
     }
-    list.push(item.id)
+    list.push(parseInt(id))
   }
   return list
 }
@@ -90,4 +94,8 @@ export function getSchedulesByDay(day) {
     }
   }
   return schedules
+}
+
+export function getSchedules() {
+  return schedule
 }
